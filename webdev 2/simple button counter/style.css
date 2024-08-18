@@ -1,0 +1,36 @@
+body {
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.counter {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.number {
+    background-color: green;
+    height: 50px;
+    width: 50px;
+    font-size: 50px;
+    text-align: center;
+    margin: 5px;
+    padding: 10px;
+    border: solid 3px;
+}
+
+.button {
+    background-color: rgb(255, 81, 81);
+    height: 50px;
+    width: auto;
+    font-size: 50px;
+    margin: 5px;
+    padding: 10px;
+    border: solid 3px;
+    cursor: pointer;
+}
