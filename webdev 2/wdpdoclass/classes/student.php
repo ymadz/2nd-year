@@ -35,11 +35,4 @@
                 return false;
             }
         }
-
-        function query($queryArg) {
-            $query = $queryArg;
-            $statement = $this->conn->prepare($query);
-            $statement->execute();
-        }
-    
     }
