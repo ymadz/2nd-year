@@ -3,16 +3,16 @@
     ini_set('display_errors', 0); 
     require_once "classes/function.php";
     require_once "classes/books.php";
-    $title = $auth_name = $genre = $publisher = $pub_date = $edition = $no_of_copies = $format = $age_group = $rating = '';
-    $book_idErr = $titleErr = $auth_nameErr = $genreErr = $publisherErr = $pub_dateErr = $editionErr = $no_of_copiesErr = $formatErr = $age_groupErr = $ratingErr = '';
+
+    $title = $auth_name = $genre = $publisher = $pub_date = $edition = $no_of_copies = $format = $rating = '';
+    $titleErr = $auth_nameErr = $genreErr = $publisherErr = $pub_dateErr = $editionErr = $no_of_copiesErr = $formatErr = $age_groupErr = $ratingErr = '';
 
     $bookObj = new Books;
 
     if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         if (isset($_POST['clear_database']) && $_POST['clear_database'] == '1') {
             $bookObj->clearDatabase();
-        } 
-        elseif (isset($_POST['submit'])) {
+        } elseif (isset($_POST['submit'])) {
             $title = clean_input($_POST['title']);
             if (empty($title)) {
                 $titleErr = "Title is required";
@@ -61,8 +61,7 @@
             if (empty($age_group)) {
                 $age_groupErr = "At least one age group must be selected";
             }
-
-            $age_group_str = implode(',', $age_group);
+            $bookObj->age_group = implode(',', $age_group);
 
             $rating = clean_input($_POST['rating']);
             if (empty($rating)) {
@@ -80,7 +79,6 @@
                 $bookObj->edition = $edition;
                 $bookObj->no_of_copies = $no_of_copies;
                 $bookObj->format = $format;
-                $bookObj->age_group = $age_group_str;
                 $bookObj->rating = $rating;
 
                 $bookObj->add();
@@ -89,6 +87,14 @@
     }
 
     $books = $bookObj->getBooks();
+
+    foreach ($books as $book) {
+        if (!empty($book['age_group'])) {
+            $book['age_group'] = explode(',', $book['age_group']);
+        } else {
+            $book['age_group'] = array();
+        }
+    }
 ?>
 
 <!DOCTYPE html>
@@ -104,47 +110,86 @@
     <div class="form">
         <h2>Add a New Book to the Library</h2>
         <form action="index.php" method="post">
-            <label for="title">Book Title</label>
-            <input type="text" id="title" name="title" placeholder="Enter Book Title" required>
-            <label for="auth_name">Author's Name</label>
-            <input type="text" id="auth_name" name="auth_name" placeholder="Enter Lead Author's Name" required>
-            <label for="genre">Genre</label>
-            <select name="genre" id="genre" required>
-                <option value="" selected>-- Select --</option>
-                <option value="fiction">Fiction</option>
-                <option value="biography">Biography</option>
-                <option value="history">History</option>
-                <option value="drama">Drama</option>
-                <option value="poetry">Poetry</option>
+            <label for="title">Book Title<span class ="error"> *</span></label>
+            <input type="text" id="title" name="title" placeholder="Enter Book Title">
+            <?php if (!empty($auth_nameErr)) { ?>
+                <span class="error"><?= $auth_nameErr ?></span>
+            <?php } ?> 
+
+            <label for="auth_name">Author's Name<span class ="error"> *</span></label>
+            <input type="text" id="auth_name" name="auth_name" placeholder="Enter Lead Author's Name">
+            <?php if (!empty($auth_nameErr)) { ?>
+                <span class="error"><?= $auth_nameErr ?></span>
+            <?php } ?> 
+            
+            <label for="genre">Genre<span class ="error"> *</span></label>
+            <select name="genre" id="genre">
+                <option value="" <?= empty($genre) ? 'selected' : '' ?>>-- Select --</option>
+                <option value="fiction" <?= $genre == 'fiction' ? 'selected' : '' ?>>Fiction</option>
+                <option value="biography" <?= $genre == 'biography' ? 'selected' : '' ?>>Biography</option>
+                <option value="history" <?= $genre == 'history' ? 'selected' : '' ?>>History</option>
+                <option value="drama" <?= $genre == 'drama' ? 'selected' : '' ?>>Drama</option>
+                <option value="poetry" <?= $genre == 'poetry' ? 'selected' : '' ?>>Poetry</option>
             </select>
-            <label for="publisher">Publisher</label>
-            <input type="text" name="publisher" id="publisher" placeholder="Enter Publisher's Company Name" required>
-            <label for="pub_date">Publication Date</label>
-            <input type="date" name="pub_date" id="pub_date" required>
-            <label for="edition">Edition</label>
-            <input type="number" name="edition" id="edition" placeholder="Enter Edition Number" required>
-            <label for="no_of_copies">Number of Copies</label>
-            <input type="number" name="no_of_copies" id="no_of_copies" placeholder="Enter number of available copies" required>
-            <label>Format</label>
-            <div class="format">
-                <input type="radio" name="format" id="hardbound" value="hardbound" required>
-                <label for="hardbound">Hardbound</label>
-                <input type="radio" name="format" id="softbound" value="softbound">
-                <label for="softbound">Softbound</label>
-            </div>
-            <label>Age Group</label>
+            <?php if (!empty($genreErr)) { ?>
+                <span class="error"><?= $genreErr ?></span>
+            <?php } ?>
+
+            <label for="publisher">Publisher<span class ="error"> *</span></label>
+            <input type="text" name="publisher" id="publisher" placeholder="Enter Publisher's Company Name" value="<?= htmlspecialchars($publisher) ?>">
+            <?php if (!empty($publisherErr)) { ?>
+            <span class="error"><?= $publisherErr ?></span>
+            <?php } ?>
+           
+            <label for="pub_date">Publication Date<span class ="error"> *</span></label>
+            <input type="date" name="pub_date" id="pub_date" value="<?= htmlspecialchars($pub_date) ?>">
+            <?php if (!empty($pub_dateErr)) { ?>
+            <span class="error"><?= $pub_dateErr ?></span>
+            <?php } ?>
+
+            <label for="edition">Edition<span class ="error"> *</span></label>
+            <input type="number" name="edition" id="edition" placeholder="Enter Edition Number" value="<?= htmlspecialchars($edition) ?>">
+            <?php if (!empty($editionErr)) { ?>
+            <span class="error"><?= $editionErr ?></span>
+            <?php } ?>
+
+            <label for="no_of_copies">Number of Copies<span class ="error"> *</span></label>
+            <input type="number" name="no_of_copies" id="no_of_copies" placeholder="Enter number of available copies" value="<?= htmlspecialchars($no_of_copies) ?>">
+            <?php if (!empty($no_of_copiesErr)) { ?>
+            <span class="error"><?= $no_of_copiesErr ?></span>
+            <?php } ?>
+    
+            <label>Format<span class ="error"> *</span></label>
+    <div class="format">
+        <input type="radio" name="format" id="hardbound" value="hardbound" <?= $format == 'hardbound' ? 'checked' : '' ?>>
+        <label for="hardbound">Hardbound</label>
+        <input type="radio" name="format" id="softbound" value="softbound" <?= $format == 'softbound' ? 'checked' : '' ?>>
+        <label for="softbound">Softbound</label>
+    </div>
+    <?php if (!empty($formatErr)) { ?>
+            <span class="error"><?= $formatErr ?></span>
+            <?php } ?>
+
+            <label>Age Group<span class ="error"> *</span></label>
             <div class="age_group">
-                <input type="checkbox" name="age_group[]" id="kids" value="kids">
-                <label for="kids">Kids</label>
-                <input type="checkbox" name="age_group[]" id="teens" value="teens">
-                <label for="teens">Teens</label>
-                <input type="checkbox" name="age_group[]" id="adults" value="adults">
-                <label for="adults">Adults</label>
-            </div>
-            <label for="rating">Book Rating</label>
+    <input type="checkbox" name="age_group[]" id="kids" value="kids" <?= isset($age_group_array) && in_array("kids", (array)$age_group) ? 'checked' : '' ?>>
+    <label for="kids">Kids</label>
+    
+    <input type="checkbox" name="age_group[]" id="teens" value="teens" <?= isset($age_group_array) && in_array("teens", (array)$age_group) ? 'checked' : '' ?>>
+    <label for="teens">Teens</label>
+    
+    <input type="checkbox" name="age_group[]" id="adults" value="adults" <?= isset($age_group_array) && in_array("adults", (array)$age_group) ? 'checked' : '' ?>>
+    <label for="adults">Adults</label>
+</div>
+
+    <?php if (!empty($age_groupErr)) { ?>
+        <span class="error"><?= $age_groupErr ?></span>
+    <?php } ?>
+    
+            <label for="rating">Book Rating<span class ="error"> *</span></label>
             <div class="book_rating">
                 1 star
-                <input type="range" name="rating" id="rating" min="1" max="5" required> 5 stars
+                <input type="range" name="rating" id="rating" min="1" max="5"> 5 stars
             </div>
             <label for="description">Description</label>
             <textarea name="description" id="description" rows="4" cols="10" placeholder="Describe the book (optional)"></textarea>
