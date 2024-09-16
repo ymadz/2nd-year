@@ -2,7 +2,7 @@ body {
   font-family: monospace;
   padding: 0;
   margin: 0;
-  background-color: lightblue;
+  background-color: rgb(255, 125, 102);
   height: 100vh;
 }
 
@@ -121,5 +121,9 @@ form {
 }
 
 label {
-    font-weight: bold;
+  font-weight: bold;
+}
+
+.error {
+  color: red;
 }
